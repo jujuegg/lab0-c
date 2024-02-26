@@ -60,7 +60,7 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
     list_del(first_ptr);
 
     strncpy(sp, node->value, bufsize);
-    sp[bufsize] = '\0';
+    sp[bufsize - 1] = '\0';
 
     return node;
 }
@@ -76,7 +76,7 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
     list_del(last_ptr);
 
     strncpy(sp, node->value, bufsize);
-    sp[bufsize] = '\0';
+    sp[bufsize - 1] = '\0';
 
     return node;
 }

@@ -19,5 +19,23 @@ reverse
 size
 # Delete queue.  Goes back to a NULL queue.
 free
+
+# Remove Head
+rh
+# Remove Tail
+rt
+# Create empty queue
+new
+# Remove Head
+rh
+# Remove Tail
+rt
+# Fill it with some values.
+it 0
+it 1
+it 2
+it 3
+it 4
+
 # Exit program
 quit
