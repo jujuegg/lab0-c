@@ -10,21 +10,30 @@
  *   cppcheck-suppress nullPointer
  */
 
+/*declaration*/
+element_t *new_node(char *s);
 
 /* Create an empty queue */
 struct list_head *q_new()
 {
     struct list_head *head = malloc(sizeof(struct list_head));
+
+    if (!head) {
+        free(head);
+        return NULL;
+    }
+
     INIT_LIST_HEAD(head);
 
     return head;
 }
-/*declaration*/
-element_t *new_node(char *s);
 
 /* Free all storage used by queue */
 void q_free(struct list_head *l)
 {
+    if (!l)
+        return;
+
     element_t *entry, *safe;
 
     list_for_each_entry_safe (entry, safe, l, list) {
@@ -37,7 +46,15 @@ void q_free(struct list_head *l)
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+
     element_t *node = new_node(s);
+    if (!node) {
+        free(node);
+        return false;
+    }
+
     list_add(&node->list, head);
 
     return true;
@@ -46,7 +63,15 @@ bool q_insert_head(struct list_head *head, char *s)
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+
     element_t *node = new_node(s);
+    if (!node) {
+        free(node);
+        return false;
+    }
+
     list_add_tail(&node->list, head);
 
     return true;
@@ -55,9 +80,13 @@ bool q_insert_tail(struct list_head *head, char *s)
 /* Remove an element from head of queue */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
+    if (!head || list_empty(head))
+        return NULL;
+
     struct list_head *first_ptr = head->next;
     element_t *node = list_entry(first_ptr, element_t, list);
     list_del(first_ptr);
+
 
     strncpy(sp, node->value, bufsize);
     sp[bufsize - 1] = '\0';
@@ -92,6 +121,7 @@ int q_size(struct list_head *head)
 
     list_for_each (li, head)
         len++;
+
     return len;
 }
 
@@ -99,6 +129,9 @@ int q_size(struct list_head *head)
 // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
 bool q_delete_mid(struct list_head *head)
 {
+    if (!head || list_empty(head))
+        return false;
+
     int mid;
     struct list_head *mid_ptr = head->next;
 
@@ -116,29 +149,132 @@ bool q_delete_mid(struct list_head *head)
 }
 
 /* Delete all nodes that have duplicate string */
+// https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
 bool q_delete_dup(struct list_head *head)
 {
-    // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (!head || list_empty(head))
+        return false;
+
+    bool last_dup = false;
+    struct list_head *node, *safe;
+
+    list_for_each_safe (node, safe, head) {
+        element_t *entry = list_entry(node, element_t, list);
+        if (safe != head &&
+            !strcmp(entry->value, list_entry(safe, element_t, list)->value)) {
+            last_dup = true;
+            list_del(node);
+            free(entry->value);
+            free(entry);
+        } else if (last_dup) {
+            last_dup = false;
+            list_del(node);
+            free(entry->value);
+            free(entry);
+        }
+    }
+
     return true;
 }
 
 /* Swap every two adjacent nodes */
+// https://leetcode.com/problems/swap-nodes-in-pairs/
 void q_swap(struct list_head *head)
 {
-    // https://leetcode.com/problems/swap-nodes-in-pairs/
+    if (!head || list_empty(head))
+        return;
+
+    struct list_head *node, *safe;
+
+    list_for_each_safe (node, safe, head) {
+        if (safe == head)
+            return;
+
+        node->prev->next = safe;
+        safe->next->prev = node;
+        node->next = safe->next;
+        safe->next = node;
+        safe->prev = node->prev;
+        node->prev = safe;
+
+        safe = node->next;
+    }
 }
 
 /* Reverse elements in queue */
-void q_reverse(struct list_head *head) {}
+void q_reverse(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return;
+
+    struct list_head *node, *safe;
+
+    list_for_each_safe (node, safe, head) {
+        list_move(node, head);
+    }
+
+    return;
+}
 
 /* Reverse the nodes of the list k at a time */
+// https://leetcode.com/problems/reverse-nodes-in-k-group/
 void q_reverseK(struct list_head *head, int k)
 {
-    // https://leetcode.com/problems/reverse-nodes-in-k-group/
+    if (!head || list_empty(head))
+        return;
+}
+
+void merge_two_sorted_list(struct list_head *left_head,
+                           struct list_head *right_head,
+                           struct list_head *head)
+{
+    while (!list_empty(left_head) && !list_empty(right_head)) {
+        element_t *left_entry = list_entry(left_head->next, element_t, list);
+        element_t *right_entry = list_entry(right_head->next, element_t, list);
+
+        if (strcmp(left_entry->value, right_entry->value) <= 0)
+            list_move_tail(left_head->next, head);
+        else
+            list_move_tail(right_head->next, head);
+    }
+
+    if (list_empty(left_head))
+        list_splice_tail_init(right_head, head);
+    else
+        list_splice_tail_init(left_head, head);
 }
 
 /* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend) {}
+void merge_sort(struct list_head *head)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+
+    struct list_head *slow = head, *fast = head;
+
+    do {
+        fast = fast->next->next;
+        slow = slow->next;
+    } while (!(fast == head || fast->next == head));
+
+    LIST_HEAD(left_head);
+    LIST_HEAD(right_head);
+    list_splice_tail_init(head, &right_head);
+    list_cut_position(&left_head, &right_head, slow);
+
+    merge_sort(&left_head);
+    merge_sort(&right_head);
+    merge_two_sorted_list(&left_head, &right_head, head);
+}
+
+void q_sort(struct list_head *head, bool descend)
+{
+    merge_sort(head);
+
+    if (descend)
+        q_reverse(head);
+}
+
 
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
@@ -168,7 +304,16 @@ int q_merge(struct list_head *head, bool descend)
 element_t *new_node(char *s)
 {
     element_t *node = malloc(sizeof(element_t));
+    if (!node) {
+        free(node);
+        return NULL;
+    }
+
     node->value = strdup(s);
+    if (!node->value) {
+        free(node);
+        return NULL;
+    }
 
     return node;
 }
