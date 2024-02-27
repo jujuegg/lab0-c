@@ -5,21 +5,17 @@ show
 # Create empty queue
 new
 
-# Fill it with some values.
-it 0
-it 1 2
-it 3 3
-it 2
-
-# Another queue
-new
-
-it 4
-it 6 2
 it 5
+it 2
+it 3
+it 8
+it 4
+it 6
+it 7
 
-# Merge
-merge
+# descend
+descend
+
 
 # Delete queue.
 free
