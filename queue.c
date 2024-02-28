@@ -50,14 +50,12 @@ void q_free(struct list_head *l)
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
-    if (!head)
+    if (__glibc_unlikely(!head || !s))
         return false;
 
     element_t *node = new_node(s);
-    if (!node) {
-        free(node);
+    if (!node)
         return false;
-    }
 
     list_add(&node->list, head);
 
@@ -67,12 +65,11 @@ bool q_insert_head(struct list_head *head, char *s)
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
-    if (!head)
+    if (__glibc_unlikely(!head || !s))
         return false;
 
     element_t *node = new_node(s);
     if (!node) {
-        free(node);
         return false;
     }
 
@@ -443,12 +440,11 @@ int q_merge(struct list_head *head, bool descend)
 element_t *new_node(char *s)
 {
     element_t *node = malloc(sizeof(element_t));
-    if (!node) {
+    if (!node)
         return NULL;
-    }
 
     node->value = strdup(s);
-    if (!node->value) {
+    if (__glibc_likely(!node->value)) {
         free(node);
         return NULL;
     }
