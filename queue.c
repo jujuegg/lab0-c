@@ -270,13 +270,13 @@ void merge_two_sorted_list(struct list_head *left_head,
         element_t *left_entry = list_entry(left_head->next, element_t, list);
         element_t *right_entry = list_entry(right_head->next, element_t, list);
 
-        if (descend == false) {
+        if (!descend) {
             if (strcmp(left_entry->value, right_entry->value) <= 0)
                 list_move_tail(left_head->next, head);
             else
                 list_move_tail(right_head->next, head);
         } else {
-            if (strcmp(left_entry->value, right_entry->value) > 0)
+            if (strcmp(left_entry->value, right_entry->value) >= 0)
                 list_move_tail(left_head->next, head);
             else
                 list_move_tail(right_head->next, head);
