@@ -44,6 +44,7 @@ extern int show_entropy;
  */
 #include "list_sort.h"
 #include "queue.h"
+#include "shuffle.h"
 
 #include "console.h"
 #include "report.h"
@@ -680,6 +681,25 @@ bool do_lsort(int argc, char *argv[])
     return ok && !error_check();
 }
 
+static bool do_shuffle(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+
+    if (!current || !current->q)
+        report(3, "Warning: Calling shuffle on null queue");
+    error_check();
+    if (q_size(current->q) < 2)
+        report(3, "Warning: Calling shuffle on single queue");
+    error_check();
+    if (exception_setup(true))
+        q_shuffle(current->q);
+    q_show(3);
+    return !error_check();
+}
+
 static bool do_dm(int argc, char *argv[])
 {
     if (argc != 1) {
@@ -1090,6 +1110,7 @@ static void console_init()
     ADD_COMMAND(
         lsort,
         "Sort queue in ascending/descening order provided by linux kernel", "");
+    ADD_COMMAND(shuffle, "Do the Fisher–Yates Shuffle algorithm", "");
     ADD_COMMAND(size, "Compute queue size n times (default: n == 1)", "[n]");
     ADD_COMMAND(show, "Show queue contents", "");
     ADD_COMMAND(dm, "Delete middle node in queue", "");
