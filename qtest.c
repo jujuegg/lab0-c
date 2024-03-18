@@ -233,6 +233,16 @@ static bool do_ttt(int argc, char *argv[])
         }
 
         turn = turn == 'X' ? 'O' : 'X';
+
+        if (ai_vs_ai) {
+            draw_board(table);
+            time_t timer = time(NULL);
+            struct tm *tm_info = localtime(&timer);
+
+            char buffer[26];
+            strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+            puts(buffer);
+        }
     }
     print_moves();
 
