@@ -65,6 +65,7 @@ extern int show_entropy;
 #define BIG_LIST_SIZE 30
 
 /* Global variables */
+int ai_vs_ai = 0;
 
 typedef struct {
     struct list_head head;
@@ -202,21 +203,31 @@ static bool do_ttt(int argc, char *argv[])
                 record_move(move);
             }
         } else {
-            draw_board(table);
-            int move;
-            while (1) {
-                move = get_input(turn);
-                if (table[move] == ' ') {
-                    break;
+            if (ai_vs_ai) {  // AI vs. AI
+                int move = negamax_predict(table, turn).move;
+                if (move != -1) {
+                    table[move] = turn;
+                    record_move(move);
                 }
-                printf("Invalid operation: the position has been marked\n");
+            } else {  // Player vs. AI
+                draw_board(table);
+                int move;
+                while (1) {
+                    move = get_input(turn);
+                    if (table[move] == ' ') {
+                        break;
+                    }
+                    printf("Invalid operation: the position has been marked\n");
+                }
+                table[move] = turn;
+                record_move(move);
             }
-            table[move] = turn;
-            record_move(move);
         }
         turn = turn == 'X' ? 'O' : 'X';
     }
     print_moves();
+
+    move_count = 0;
 
     return true;
 }
@@ -1262,6 +1273,7 @@ static void console_init()
                 "[K]");
     ADD_COMMAND(ttt, "Tic-Tac-Toe", "");
 
+    add_param("AI_vs_AI", &ai_vs_ai, "Let AI and AI play Tic-Tac-Toe", NULL);
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
