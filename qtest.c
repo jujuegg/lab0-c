@@ -181,6 +181,7 @@ static bool do_ttt(int argc, char *argv[])
     memset(table, ' ', N_GRIDS);
     char turn = 'X';
     char ai = 'O';
+    bool first_move = true;
 
     negamax_init();
 
@@ -204,7 +205,13 @@ static bool do_ttt(int argc, char *argv[])
             }
         } else {
             if (ai_vs_ai) {  // AI vs. AI
-                int move = negamax_predict(table, turn).move;
+                int move;
+                if (first_move) {
+                    move = rand() % (BOARD_SIZE * BOARD_SIZE - 1);
+                    first_move = false;
+                } else
+                    move = negamax_predict(table, turn).move;
+
                 if (move != -1) {
                     table[move] = turn;
                     record_move(move);
@@ -221,8 +228,10 @@ static bool do_ttt(int argc, char *argv[])
                 }
                 table[move] = turn;
                 record_move(move);
+                printf("move = %d\n", move);
             }
         }
+
         turn = turn == 'X' ? 'O' : 'X';
     }
     print_moves();
